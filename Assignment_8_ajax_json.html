@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List with AJAX</title>
+    <style>
+        /* Basic styling for the page */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        ul {
+            list-style-type: none;
+        }
+        li {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>To-Do List</h1>
+
+    <!-- Button to load the to-do list -->
+    <button onclick="loadTodos()">Load To-Do List</button>
+    <ul id="todoList">
+        <!-- To-do items will appear here -->
+    </ul>
+
+    <h2>Add New To-Do</h2>
+
+    <!-- Form to add a new to-do item -->
+    <form id="todoForm" onsubmit="addTodo(); return false;">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+        <br>
+        <label for="completed">Completed:</label>
+        <input type="checkbox" id="completed" name="completed">
+        <br>
+        <button type="submit">Add To-Do</button>
+    </form>
+
+    <ul id="newTodo">
+        <!-- New to-do item will appear here -->
+    </ul>
+
+    <script>
+        function loadTodos() {
+            // Create a new XMLHttpRequest object to handle the GET request
+            let xhr = new XMLHttpRequest();
+
+            // Open a GET request to the JSONPlaceholder API for the first 5 to-do items
+            xhr.open("GET", "https://jsonplaceholder.typicode.com/todos?_limit=5", true);
+
+            // Define the function to handle the server response
+            xhr.onreadystatechange = function () {
+                // Check if the request is complete and was successful
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Parse the JSON response from the server
+                    let todos = JSON.parse(xhr.responseText);
+
+                    // Get the HTML element for the to-do list and clear it
+                    const todoList = document.getElementById('todoList');
+                    todoList.innerHTML = "";
+
+                    // Loop through the to-do items and add each one to the list
+                    todos.forEach(todo => {
+                        let listItem = document.createElement('li');
+                        listItem.textContent = todo.title;
+                        todoList.appendChild(listItem);
+                    });
+                }
+            };
+            // Send the GET request to the server
+            xhr.send();
+        }
+
+        function addTodo() {
+            // Get input values for the new to-do item
+            let title = document.getElementById('title').value;
+            let completed = document.getElementById('completed').checked;
+
+            // Prepare the new to-do item data as a JSON object
+            let todoData = JSON.stringify({
+                title: title,
+                completed: completed
+            });
+
+            // Create a new XMLHttpRequest object to handle the POST request
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://jsonplaceholder.typicode.com/todos", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            // Define the function to handle the server response
+            xhr.onload = function() {
+                // Check if the POST request was successful (status 201 means created)
+                if (xhr.status === 201) {
+                    // Parse the response to get the created to-do item
+                    let newTodo = JSON.parse(xhr.responseText);
+
+                    // Display the new to-do item in the newTodo list
+                    const newTodoList = document.getElementById('newTodo');
+                    let listItem = document.createElement('li');
+                    listItem.textContent = newTodo.title + (newTodo.completed ? " (Completed)" : " (Not Completed)");
+                    newTodoList.appendChild(listItem);
+
+                    // Clear the form fields after submission
+                    document.getElementById('title').value = "";
+                    document.getElementById('completed').checked = false;
+                }
+            };
+
+            // Send the JSON data as the request body
+            xhr.send(todoData);
+        }
+    </script>
+
+</body>
+</html>
+
+__________________________________________________________________
